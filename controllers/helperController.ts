@@ -1,8 +1,8 @@
 // controllers/helperController.ts
 import { Request, Response } from "express";
 import { HelperService } from "../services/helperService";
-import { addHelperData, deleteHelperById, sendHelperById, sendHelpersData, updateHelperByID } from "../middlewares/successHandler";
 import { NextFunction } from "express";
+import { successHandler } from "../middlewares/errorHandler";
 
 export class HelperController {
   private helperService: HelperService;
@@ -11,67 +11,67 @@ export class HelperController {
     this.helperService = new HelperService();
   }
 
-  getHelpers = async (req: Request, res: Response , next : NextFunction) => {
+  getHelpers = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const helpers = await this.helperService.getAllHelpers();
-      sendHelpersData(res,helpers);
-    } catch (error : any) {
+      successHandler(res, helpers, "helpers fetched successfully");
+    } catch (error: any) {
       error.message = "failed to fetch helpers";
       error.statusCode = 500;
       next(error);
     }
   };
 
-  addHelper = async (req: Request, res: Response, next : NextFunction) => {
+  addHelper = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const savedHelper = await this.helperService.addHelper(req.body);
-      addHelperData(res,savedHelper);
-    } catch (error : any) {
+      successHandler(res, savedHelper, "helper added successfully");
+    } catch (error: any) {
       error.message = "failed to add Helper";
       error.statusCode = 500;
       next(error);
     }
   };
 
-  getHelperById = async (req: Request, res: Response , next : NextFunction) => {
+  getHelperById = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = parseInt(req.params.id);
       const helper = await this.helperService.getHelperById(id);
 
       if (!helper) {
-        const error : any = new Error("Helper not found");
+        const error: any = new Error("Helper not found");
         error.statusCode(400);
         return next(error);
       }
 
-      sendHelperById(res,helper);
-    } catch (error : any) {
+      successHandler(res, helper, "helper fetched by id");
+    } catch (error: any) {
       error.statusCode = 500;
       error.message = "error fetching helper";
       next(error);
     }
   };
 
-  deleteHelper = async (req: Request, res: Response , next : NextFunction) => {
+  deleteHelper = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = parseInt(req.params.id);
       const deletedHelper = await this.helperService.deleteHelper(id);
 
       if (!deletedHelper) {
-        const error : any = new Error("helper not found");
+        const error: any = new Error("helper not found");
         error.statusCode = 400;
         return next(error);
       }
 
-      deleteHelperById(res,deletedHelper);
-    } catch (error : any) {
+      successHandler(res, deletedHelper, "helper deleted successfully");
+    } catch (error: any) {
       error.statusCode = 500;
       error.message = "error in deleting helper";
       next(error);
     }
   };
 
-  updateHelper = async (req: Request, res: Response , next : NextFunction) => {
+  updateHelper = async (req: Request, res: Response, next: NextFunction) => {
     const helperId = parseInt(req.params.id);
     try {
       const updatedData = {
@@ -105,13 +105,13 @@ export class HelperController {
       );
 
       if (!updatedHelper) {
-        const error : any = new Error("helper not found");
+        const error: any = new Error("helper not found");
         error.statusCode = 400;
         return next(error);
       }
 
-      updateHelperByID(res,updatedHelper);
-    } catch (error : any) {
+      successHandler(res, updatedHelper, "helper updated successfully");
+    } catch (error: any) {
       error.statusCode = 500;
       error.message = "faled to update Helper";
       next(error);

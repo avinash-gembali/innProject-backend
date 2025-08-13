@@ -4,7 +4,6 @@ import { Helper } from "../models/helper.model";
 
 export const errorHandler = (
   err: any,
-  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -14,6 +13,18 @@ export const errorHandler = (
     success: false,
     message,
   });
+};
+
+export const successHandler = (
+    res : Response,
+    data : any,
+    message : String
+) => {
+    res.status(200).json({
+        success : true,
+        msg : message,
+        data : data
+    });
 };
 
 export const validateHelper = [

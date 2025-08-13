@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { FileService } from '../services/fileService';
-import { sendFileUrl } from '../middlewares/successHandler';
+import { successHandler } from '../middlewares/errorHandler';
 
 export class FileController {
   private fileService: FileService;
@@ -18,7 +18,7 @@ export class FileController {
       }
 
       const url = await this.fileService.uploadToCloudinary(req.file.path, 'helpers');
-      sendFileUrl(res,url);
+      successHandler(res,url,"photo uploaded to cloudinary");
     } catch (error : any) {
       error.statusCode = 500;
       error.message = "upload Failed";
