@@ -3,12 +3,15 @@ import { Request, Response } from "express";
 import { HelperService } from "../services/helperService";
 import { NextFunction } from "express";
 import { successHandler } from "../middlewares/errorHandler";
+import { FileService } from "../services/fileService";
 
 export class HelperController {
   private helperService: HelperService;
+  private fileService: FileService;
 
   constructor() {
     this.helperService = new HelperService();
+    this.fileService = new FileService();
   }
 
   getHelpers = async (req: Request, res: Response, next: NextFunction) => {
@@ -24,7 +27,44 @@ export class HelperController {
 
   addHelper = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const savedHelper = await this.helperService.addHelper(req.body);
+      const helper = {
+        id: Number(req.body.id),
+        name: req.body.name,
+        role: req.body.role,
+        employeeCode: req.body.employeeCode,
+        gender: req.body.gender,
+        languages: req.body.languages,
+        mobileNo: req.body.mobileNo,
+        emailId: req.body.emailId,
+        vehicle: req.body.vehicle,
+        vehicleNumber: req.body.vehicleNumber,
+        organization: req.body.organization,
+        joinedOn: req.body.joinedOn,
+        imageUrl: req.body.imageUrl,
+        additionalDocument: {
+          category: req.body.additionalDocument?.category || "",
+          fileName: req.body.additionalDocument?.fileName || "",
+        },
+        kycDocument: {
+          category: req.body.kycDocument?.category || "",
+          fileName: req.body.kycDocument?.fileName || "",
+        },
+      };
+
+      if (req.file) {
+        try {
+          helper.imageUrl = await this.fileService.uploadToCloudinary(
+            req.file.path,
+            "helpers"
+          );
+        } catch (error: any) {
+          error.statusCode = 500;
+          error.message = "upload Failed";
+          next(error);
+        }
+      }
+
+      const savedHelper = await this.helperService.addHelper(helper);
       successHandler(res, savedHelper, "helper added successfully");
     } catch (error: any) {
       error.message = "failed to add Helper";
@@ -76,17 +116,17 @@ export class HelperController {
     try {
       const updatedData = {
         id: req.body.id,
-        name: req.body.fullName,
-        role: req.body.service,
-        imageUrl: req.body.photoPreview || "",
+        name: req.body.name,
+        role: req.body.role,
+        imageUrl: req.body.imageUrl || "",
         employeeCode: req.body.employeeCode,
         gender: req.body.gender,
         languages: req.body.languages,
-        mobileNo: req.body.phone,
-        emailId: req.body.email,
-        type: req.body.service,
+        mobileNo: req.body.mobileNo,
+        emailId: req.body.emailId,
+        type: req.body.role,
         organization: req.body.organization,
-        joinedOn: req.body.date,
+        joinedOn: req.body.joinedOn,
         vehicle: req.body.vehicle || "none",
         vehicleNumber: req.body.vehicleNumber || "",
         additionalDocument: {
@@ -98,6 +138,19 @@ export class HelperController {
           fileName: req.body.kycDocument?.fileName || "",
         },
       };
+
+      if (req.file) {
+        try {
+          updatedData.imageUrl = await this.fileService.uploadToCloudinary(
+            req.file.path,
+            "helpers"
+          );
+        } catch (error: any) {
+          error.statusCode = 500;
+          error.message = "upload Failed";
+          next(error);
+        }
+      }
 
       const updatedHelper = await this.helperService.updateHelper(
         helperId,

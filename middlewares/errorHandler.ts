@@ -27,6 +27,24 @@ export const successHandler = (
     });
 };
 
+export const parseFormData = (req : Request, res : Response, next : NextFunction) => {
+  try {
+    if (req.body.languages) {
+      req.body.languages = JSON.parse(req.body.languages);
+    }
+    if (req.body.kycDocument) {
+      req.body.kycDocument = JSON.parse(req.body.kycDocument);
+    }
+    if (req.body.additionalDocument) {
+      req.body.additionalDocument = JSON.parse(req.body.additionalDocument);
+    }
+  } catch (err) {
+    return res.status(400).json({ message: 'Invalid JSON in form data' });
+  }
+  next();
+};
+
+
 export const validateHelper = [
   body("id")
     .notEmpty()
